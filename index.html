@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetFeeder IoT Cloud Pro - Gestão Total</title>
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --bg-panel: #111827;
+            --bg-card: #1f293d;
+            --border-color: #2e3a52;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand i {
+            font-size: 24px;
+            color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .header-brand h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .header-brand span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .clock-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.7);
+        }
+
+        .main-container {
+            padding: 20px 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent-purple);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-purple);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .kpi-card.green::before { background: var(--accent-green); }
+        .kpi-card.yellow::before { background: var(--accent-yellow); }
+        .kpi-card.red::before { background: var(--accent-red); }
+
+        .kpi-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 1200px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-box {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .box-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .silo-container {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            background: var(--bg-base);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .silo-visual {
+            width: 90px;
+            height: 220px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .silo-fill {
+            width: 100%;
+            background: linear-gradient(to top, #d97706, #f59e0b);
+            transition: height 0.5s ease;
+        }
+
+        .silo-data {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .silo-data p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Tabelas e Formulários */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .custom-table td {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-sched {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Formulários Customizáveis */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-control {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        .days-selector {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .day-chip {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .day-chip.selected {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+        }
+
+        /* Logs Console */
+        .log-console {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            height: 280px;
+            overflow-y: auto;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .log-entry {
+            padding: 6px 10px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.02);
+            border-left: 3px solid var(--accent-purple);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-entry.warning { border-left-color: var(--accent-yellow); background: rgba(245,158,11,0.05); }
+        .log-entry.success { border-left-color: var(--accent-green); }
+
+        .log-time {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        footer {
+            background-color: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <i class="fa-solid fa-paw"></i>
+            <div>
+                <h1 id="header-device-name">PetFeeder IoT Cloud Pro</h1>
+                <span id="header-sub">Comedouro Inteligente - Dispositivo Ativo</span>
+            </div>
+        </div>
+        <div class="header-controls">
+            <div class="clock-display" id="system-clock">--:--:--</div>
+            <button class="btn-primary" onclick="triggerManualFeedFromHeader()">
+                <i class="fa-solid fa-bone"></i> ALIMENTAR AGORA
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Navegação por Abas -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('overview', this)">
+                <i class="fa-solid fa-chart-pie"></i> Visão Geral & Telemetria
+            </button>
+            <button class="tab-btn" onclick="switchTab('schedule', this)">
+                <i class="fa-solid fa-clock"></i> Gerenciar Agendamentos
+            </button>
+            <button class="tab-btn" onclick="switchTab('settings', this)">
+                <i class="fa-solid fa-gear"></i> Configurações & Wi-Fi
+            </button>
+            <button class="tab-btn" onclick="switchTab('logs', this)">
+                <i class="fa-solid fa-list-check"></i> Histórico de Disparos
+            </button>
+        </div>
+
+        <!-- ABA 1: VISÃO GERAL -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="kpi-grid">
+                <div class="kpi-card green" id="silo-kpi-card">
+                    <span class="kpi-title">Nível do Silo de Ração</span>
+                    <div class="kpi-value" id="kpi-level">78%</div>
+                    <div class="kpi-sub"><span id="kpi-weight-text">~1.95 kg restantes</span> <span style="color: var(--accent-green)">Adequado</span></div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Última Refeição Distribuída</span>
+                    <div class="kpi-value" id="kpi-last-feed">08:30</div>
+                    <div class="kpi-sub"><span id="kpi-last-portion">Porção: 50g</span> <span>Registrado</span></div>
+                </div>
+                <div class="kpi-card green">
+                    <span class="kpi-title">Status do Motor (Rosca)</span>
+                    <div class="kpi-value" id="kpi-motor" style="font-size: 1.3rem; margin-top: 5px;">Repouso</div>
+                    <div class="kpi-sub"><span>Stepper NEMA 17</span> <span style="color: var(--accent-green)">Pronto</span></div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Modo de Operação</span>
+                    <div class="kpi-value" id="kpi-mode" style="font-size: 1.2rem; margin-top: 6px;">Automático</div>
+                    <div class="kpi-sub"><span>Cloud Conectada</span> <span style="color: var(--accent-green)">Online</span></div>
+                </div>
+            </div>
+
+            <div class="dashboard-layout">
+                <div class="panel-box">
+                    <div class="box-header">
+                        <span class="box-title"><i class="fa-solid fa-cubes"></i> Monitoramento do Silo & Ações Rápidas</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-green)">● Sensor Ultrassônico Ativo</span>
+                    </div>
+                    <div class="silo-container">
+                        <div class="silo-visual">
+                            <div class="silo-fill" id="silo-fill-bar" style="height: 78%;"></div>
+                        </div>
+                        <div class="silo-data">
+                            <h3 id="silo-cap-text">Capacidade Máxima: 2.5 kg</h3>
+                            <p>Distância do sensor até a ração: <strong id="silo-distance">6.2 cm</strong></p>
+                            <p>Status atual do reservatório: <strong id="silo-status-msg">Abastecido</strong></p>
+                            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn-primary" onclick="refillSilo()">
+                                    <i class="fa-solid fa-box-open"></i> Reabastecer Silo (100%)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-box">
+                    <div class="box-header">
+                        <span class="box-title"><i class="fa-solid fa-terminal"></i> Console do Hardware IoT</span>
+                    </div>
+                    <div class="log-console" id="mini-log-console"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 2: GERENCIAR AGENDAMENTOS -->
+        <div id="tab-schedule" class="tab-content">
+            <div class="dashboard-layout">
+                <!-- Formulário para Criar/Modificar Agendamentos -->
+                <div class="panel-box">
+                    <div class="box-header">
+                        <span class="box-title"><i class="fa-solid fa-plus-circle"></i> Adicionar / Programar Novo Horário</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Horário do Disparo</label>
+                        <input type="time" id="input-sched-time" class="form-control" value="12:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade de Ração (Gramas)</label>
+                        <input type="number" id="input-sched-grams" class="form-control" value="40" min="10" max="250">
+                    </div>
+                    <div class="form-group">
+                        <label>Dias da Semana Ativos</label>
+                        <div class="days-selector" id="days-selector-container">
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Seg">Seg</div>
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Ter">Ter</div>
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Qua">Qua</div>
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Qui">Qui</div>
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Sex">Sex</div>
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Sáb">Sáb</div>
+                            <div class="day-chip selected" onclick="toggleDayChip(this)" data-day="Dom">Dom</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="margin-top: 10px;" onclick="addNewSchedule()">
+                        <i class="fa-solid fa-check"></i> Salvar e Sincronizar com ESP32
+                    </button>
+                </div>
+
+                <!-- Tabela de Agendamentos Existentes -->
+                <div class="panel-box">
+                    <div class="box-header">
+                        <span class="box-title"><i class="fa-solid fa-clock"></i> Horários Programados Atualmente</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Horário</th>
+                                    <th>Porção</th>
+                                    <th>Dias</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-tbody">
+                                <!-- Gerado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 3: CONFIGURAÇÕES E WI-FI -->
+        <div id="tab-settings" class="tab-content">
+            <div class="dashboard-layout">
+                <div class="panel-box">
+                    <div class="box-header">
+                        <span class="box-title"><i class="fa-solid fa-sliders"></i> Ajustes do Sistema & Dispositivo</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Comedouro / Dispositivo</label>
+                        <input type="text" id="set-device-name" class="form-control" value="PetFeeder IoT Cloud Pro">
+                    </div>
+                    <div class="form-group">
+                        <label>Porção Padrão de Disparo Manual (Gramas)</label>
+                        <input type="number" id="set-default-grams" class="form-control" value="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Limite Crítico de Alerta do Silo (%)</label>
+                        <input type="number" id="set-alert-level" class="form-control" value="20">
+                    </div>
+                    <button class="btn-primary" style="margin-top: 10px;" onclick="saveDeviceSettings()">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Configurações
+                    </button>
+                </div>
+
+                <div class="panel-box">
+                    <div class="box-header">
+                        <span class="box-title"><i class="fa-solid fa-wifi"></i> Configurações de Rede Wi-Fi (ESP32)</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome da Rede Wi-Fi (SSID)</label>
+                        <input type="text" id="set-wifi-ssid" class="form-control" value="Casa_IoT_Extensor">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha do Wi-Fi</label>
+                        <input type="password" id="set-wifi-pass" class="form-control" value="••••••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label>Servidor MQTT Broker</label>
+                        <input type="text" id="set-mqtt-broker" class="form-control" value="broker.hivemq.com:1883">
+                    </div>
+                    <button class="btn-primary" style="margin-top: 10px;" onclick="saveWifiSettings()">
+                        <i class="fa-solid fa-rotate"></i> Atualizar Credenciais Wi-Fi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 4: HISTÓRICO DE LOGS -->
+        <div id="tab-logs" class="tab-content">
+            <div class="panel-box">
+                <div class="box-header">
+                    <span class="box-title"><i class="fa-solid fa-list-check"></i> Histórico Completo de Eventos e Disparos</span>
+                    <button class="btn-danger" onclick="clearLogs()">Limpar Histórico</button>
+                </div>
+                <div class="log-console" id="full-log-console" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="status-dot"></span> <span id="footer-status-text">ESP32 Conectado (Sincronizado em Tempo Real)</span>
+        </div>
+        <div id="footer-device-id">PetFeeder IoT Suite &copy; 2026</div>
+    </footer>
+
+    <script>
+        // Dados do Estado Armazenados (com localStorage para persistir se recarregar)
+        let appData = {
+            deviceName: "PetFeeder IoT Cloud Pro",
+            defaultGrams: 50,
+            alertLevel: 20,
+            wifiSsid: "Casa_IoT_Extensor",
+            siloLevel: 78,
+            siloDistance: 6.2,
+            lastFeedTime: "08:30",
+            lastFeedGrams: 50,
+            schedules: [
+                { id: 1, time: "08:30", grams: 50, days: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"] },
+                { id: 2, time: "13:00", grams: 30, days: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"] },
+                { id: 3, time: "19:30", grams: 50, days: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"] }
+            ],
+            logs: [
+                { text: "Sistema IoT inicializado. Sincronizado via NTP.", time: "00:00:01", type: "success" },
+                { text: "Rotinas de agendamento carregadas na memória EEPROM.", time: "00:00:02", type: "info" }
+            ]
+        };
+
+        // Carregar dados salvos anteriormente se existirem
+        if(localStorage.getItem('petFeederData')) {
+            try {
+                appData = JSON.parse(localStorage.getItem('petFeederData'));
+            } catch(e) { console.error(e); }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('petFeederData', JSON.stringify(appData));
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function updateUI() {
+            // Header e Rodapé
+            document.getElementById('header-device-name').innerText = appData.deviceName;
+            document.getElementById('set-device-name').value = appData.deviceName;
+            document.getElementById('set-default-grams').value = appData.defaultGrams;
+            document.getElementById('set-alert-level').value = appData.alertLevel;
+            document.getElementById('set-wifi-ssid').value = appData.wifiSsid;
+
+            // Silo
+            document.getElementById('kpi-level').innerText = appData.siloLevel + '%';
+            document.getElementById('silo-fill-bar').style.height = appData.siloLevel + '%';
+            document.getElementById('silo-distance').innerText = appData.siloDistance + ' cm';
+            document.getElementById('kpi-weight-text').innerText = `~${(appData.siloLevel * 0.025).toFixed(2)} kg restantes`;
+            
+            const kpiCard = document.getElementById('silo-kpi-card');
+            if(appData.siloLevel <= appData.alertLevel) {
+                kpiCard.className = 'kpi-card red';
+                document.getElementById('silo-status-msg').innerHTML = `<span style="color: var(--accent-red)">Nível Baixo (Atenção!)</span>`;
+            } else {
+                kpiCard.className = 'kpi-card green';
+                document.getElementById('silo-status-msg').innerText = "Abastecido e Saudável";
+            }
+
+            document.getElementById('kpi-last-feed').innerText = appData.lastFeedTime;
+            document.getElementById('kpi-last-portion').innerText = `Porção: ${appData.lastFeedGrams}g`;
+
+            renderSchedulesTable();
+            renderLogs();
+        }
+
+        function renderSchedulesTable() {
+            const tbody = document.getElementById('schedule-tbody');
+            tbody.innerHTML = '';
+            
+            if(appData.schedules.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum horário cadastrado.</td></tr>`;
+                return;
+            }
+
+            appData.schedules.forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${s.time}</strong></td>
+                        <td>${s.grams}g</td>
+                        <td><span style="font-size:0.75rem; color: var(--accent-cyan);">${s.days.join(', ')}</span></td>
+                        <td><button class="btn-danger" onclick="deleteSchedule(${s.id})">Excluir</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function toggleDayChip(element) {
+            element.classList.toggle('selected');
+        }
+
+        function addNewSchedule() {
+            const time = document.getElementById('input-sched-time').value;
+            const grams = Number(document.getElementById('input-sched-grams').value);
+            
+            const selectedDays = [];
+            document.querySelectorAll('.day-chip.selected').forEach(chip => {
+                selectedDays.push(chip.getAttribute('data-day'));
+            });
+
+            if(!time || !grams) {
+                alert("Preencha o horário e a quantidade de gramas.");
+                return;
+            }
+
+            if(selectedDays.length === 0) {
+                alert("Selecione pelo menos um dia da semana.");
+                return;
+            }
+
+            const newId = Date.now();
+            appData.schedules.push({ id: newId, time, grams, days: selectedDays });
+            saveToLocalStorage();
+            updateUI();
+
+            addLog(`Novo agendamento criado: ${time} (${grams}g) nos dias [${selectedDays.join(', ')}].`, "success");
+            alert("Agendamento adicionado e sincronizado com sucesso!");
+        }
+
+        function deleteSchedule(id) {
+            if(confirm("Deseja realmente remover este agendamento?")) {
+                appData.schedules = appData.schedules.filter(s => s.id !== id);
+                saveToLocalStorage();
+                updateUI();
+                addLog("Um agendamento foi excluído pelo operador.", "warning");
+            }
+        }
+
+        function triggerManualFeedFromHeader() {
+            const grams = appData.defaultGrams;
+            const motorEl = document.getElementById('kpi-motor');
+            motorEl.innerText = 'Girando...';
+            motorEl.style.color = 'var(--accent-purple)';
+
+            addLog(`Comando manual de alimentação acionado: Liberando ${grams}g de ração.`, "success");
+
+            setTimeout(() => {
+                motorEl.innerText = 'Repouso';
+                motorEl.style.color = 'var(--text-main)';
+
+                if(appData.siloLevel > 2) {
+                    appData.siloLevel = Math.max(0, appData.siloLevel - 3);
+                    appData.siloDistance = (Number(appData.siloDistance) + 0.5).toFixed(1);
+                }
+
+                const nowStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                appData.lastFeedTime = nowStr;
+                appData.lastFeedGrams = grams;
+
+                saveToLocalStorage();
+                updateUI();
+                addLog(`Refeição manual de ${grams}g concluída com sucesso.`, "success");
+            }, 2500);
+        }
+
+        function refillSilo() {
+            appData.siloLevel = 100;
+            appData.siloDistance = 2.0;
+            saveToLocalStorage();
+            updateUI();
+            addLog("Silo reabastecido manualmente para 100% de capacidade.", "success");
+            alert("Silo reabastecido com sucesso!");
+        }
+
+        function saveDeviceSettings() {
+            appData.deviceName = document.getElementById('set-device-name').value;
+            appData.defaultGrams = Number(document.getElementById('set-default-grams').value);
+            appData.alertLevel = Number(document.getElementById('set-alert-level').value);
+            saveToLocalStorage();
+            updateUI();
+            addLog("Configurações gerais do dispositivo atualizadas.", "success");
+            alert("Configurações salvas com sucesso!");
+        }
+
+        function saveWifiSettings() {
+            appData.wifiSsid = document.getElementById('set-wifi-ssid').value;
+            saveToLocalStorage();
+            addLog(`Credenciais de rede Wi-Fi alteradas para: ${appData.wifiSsid}`, "success");
+            alert("Configurações de Wi-Fi enviadas ao ESP32!");
+        }
+
+        function addLog(text, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            appData.logs.unshift({ text, time, type });
+            if(appData.logs.length > 50) appData.logs.pop();
+            saveToLocalStorage();
+            updateUI();
+        }
+
+        function renderLogs() {
+            const miniConsole = document.getElementById('mini-log-console');
+            const fullConsole = document.getElementById('full-log-console');
+            
+            let miniHTML = '';
+            let fullHTML = '';
+
+            appData.logs.slice(0, 15).forEach(l => {
+                let entry = `
+                    <div class="log-entry ${l.type}">
+                        <span>${l.text}</span>
+                        <span class="log-time">${l.time}</span>
+                    </div>
+                `;
+                fullHTML += entry;
+                if(miniConsole && miniConsole.children.length < 6) {
+                    miniHTML += entry;
+                }
+            });
+
+            if(miniConsole) miniConsole.innerHTML = miniHTML;
+            if(fullConsole) fullConsole.innerHTML = fullHTML;
+        }
+
+        function clearLogs() {
+            appData.logs = [];
+            saveToLocalStorage();
+            updateUI();
+            addLog("Histórico de logs limpo.", "info");
+        }
+
+        // Relógio do sistema
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('system-clock').innerText = now.toLocaleTimeString();
+        }, 1000);
+
+        // Inicialização
+        updateUI();
+    </script>
+</body>
+</html>
